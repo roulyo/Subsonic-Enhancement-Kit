@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name	Sputnik Grade Extractor
-// @namespace	roulyo
-// @include	http://subsonic.mogmi.fr/*
-// @version	1.2
-// @grant	GM_xmlhttpRequest
+// @name				Sputnik Grade Extractor
+// @namespace	 roulyo
+// @include		 http://subsonic.mogmi.fr/*
+// @version		 1
+// @grant			 GM_xmlhttpRequest
 // ==/UserScript==
 
 if (window.frameElement.name !== "main")
@@ -128,41 +128,6 @@ function debugLog(str)
 	}
 }
 
-function saveTable()
-{
-	var date = new Date();
-	var now = date.getTime();
-
-	date.setTime(now + 7*24*60*60*1000);
-
-	document.cookie = "table=" + (JSON.stringify(gArtistTable).replace(/;/g, "--"));
-	debugLog(document.cookie);
-}
-
-function loadTable()
-{
-	var nameEQ = "table=";
-	var cookieArray = document.cookie.split(";");
-	
-	for (var i = 0; i < cookieArray.length; ++i)
-	{
-		var cookieValue = cookieArray[i];
-
-		while (cookieValue.charAt(0) == " ") 
-		{
-			cookieValue = cookieValue.substring(1, cookieValue.length);
-		}
-
-		if (cookieValue.indexOf(nameEQ) == 0)
-		{
-			gArtistTable = JSON.parse((cookieValue.substring(nameEQ.length, cookieValue.length)).replace(/--/g, ";"));
-			break;
-		}
-	}
-	
-	debugLog("Table loaded.");
-}
-
 function formatText(artist_in)
 {
 	return removeDiacritics(artist_in.replace(/(^\s+)(.*)(\s+$)/g, "\\$2")
@@ -171,77 +136,73 @@ function formatText(artist_in)
 									 .toLowerCase());
 }
 
-function applyRatingOnThumbnail(tag, artistName, albumName)
+function applyRatingOnThumbnail(artist, album)
 { 
-	var rating = gArtistTable[artistName][albumName];
+	var rating = gArtistTable[artist.name][album.name];
+	var a = album.tag.getElementsByTagName("a")[0];
+	var parent = a.parentElement;
+
+	var ratingLink = document.createElement("a");
+	var text = document.createTextNode(rating);
+
+	parent.style.position = "relative";
+
+	a.style.position = "absolute";
+
+	ratingLink.style.zIndex = 100;
+	ratingLink.style.position = "absolute";
+	ratingLink.style.color = "white";
+	ratingLink.style.fontSize = "30px";
+	ratingLink.style.fontWeight = "bold";
+	ratingLink.style.right = "10px";
+	ratingLink.style.bottom = "10px";
+	ratingLink.style.textShadow = "0px 0px 5px black";
 	
-	if (rating !== undefined)
-	{
-		var a = tag.getElementsByTagName("a")[0];
-		var parent = a.parentElement;
-
-		var p = document.createElement("p");
-		var text = document.createTextNode(rating);
-
-		parent.style.position = "relative";
-
-		a.style.position = "absolute";
-
-		p.style.zIndex = 100;
-		p.style.position = "absolute";
-		p.style.color = "white";
-		p.style.fontSize = "50px";
-		p.style.fontWeight = "bold";
-		p.style.right = "10px";
-		p.style.bottom = "-30px";
-		p.style.textShadow = "0px 0px 10px black";
-
-		p.appendChild(text);
-
-		//parent.addEventListener("mouseenter", function() { parent.appendChild(p); });
-		//parent.addEventListener("mouseleave",	function() { parent.removeChild(p); });
-		parent.appendChild(p);
-	}
+	ratingLink.appendChild(text);
+	ratingLink.title = "To the Sputnik machine!"
+	ratingLink.href = album.link.replace(/.*\.mogmi\.fr/, "http://www.sputnikmusic.com");
+	
+	//parent.addEventListener("mouseenter", function() { parent.appendChild(p); });
+	//parent.addEventListener("mouseleave",	function() { parent.removeChild(p); });
+	parent.appendChild(ratingLink);
 }
 
 function extractRatings(document, artist)
 {
 	var fonts = document.getElementsByTagName("font");
 
-	loadTable();
-	
 	if (!(artist.name in gArtistTable))
 	{
-		debugLog("Creating artist " + artist.name + " in table.")
 		gArtistTable[artist.name] = {};
 	}
-	
-	for (var j = 0; j < fonts.length; ++j)
-	{
-		if (fonts[j].getAttribute("color") == "#111111")
-		{
-			debugLog("Album found: " + fonts[j].innerHTML);
-			var albumNode = fonts[j].parentElement.parentElement.parentElement.parentElement;
-			var ratingNode = albumNode.getElementsByTagName("table")[0].getElementsByTagName("tbody")[0].getElementsByTagName("tr");
-			
-			if (ratingNode.length > 1) // A rating is present
-			{
-				var albumRating = ratingNode[0].getElementsByTagName("td")[0].getElementsByTagName("center")[0].getElementsByTagName("font")[0].getElementsByTagName("b")[0].innerHTML;
 
-				debugLog(formatText(fonts[j].innerHTML) + " rating: " + albumRating);
-				gArtistTable[artist.name][formatText(fonts[j].innerHTML)] = albumRating;
-				debugLog("Rating added.");
-			}
-		}
-	}
-
-	saveTable();
-	
 	for (var i = 0; i < artist.albums.length; ++i)
 	{
 		var album = artist.albums[i];
+		var albumNode = null;
+		
+		debugLog("Looking for album: " + album.name + " in " + fonts.length + " tags");
+		
+		for (var j = 0; j < fonts.length; ++j)
+		{
+			if (fonts[j].innerHTML.toLowerCase() == album.name)
+			{
+				debugLog("Album found: " + fonts[j].innerHTML);
+				albumNode = fonts[j].parentElement.parentElement.parentElement.parentElement;
+				album.link = fonts[j].parentElement.href;
+				
+				break;
+			}
+		}
 
-		applyRatingOnThumbnail(album.tag, artist.name, album.name);
+		if (albumNode !== null)
+		{
+			var albumRating = albumNode.getElementsByTagName("table")[0].getElementsByTagName("tbody")[0].getElementsByTagName("tr")[0].getElementsByTagName("td")[0].getElementsByTagName("center")[0].getElementsByTagName("font")[0].getElementsByTagName("b")[0].innerHTML;
+
+			debugLog(album.name + " rating: " + albumRating);
+			gArtistTable[artist.name][album.name] = albumRating;
+			applyRatingOnThumbnail(artist, album);
+		}
 	}
 }
 
@@ -280,7 +241,7 @@ function getRatingsForArtists()
 	var starImage = document.getElementById("starImage");
 	var artists = [];
 	var artist = {}; // Created on a global scope (default case : album or artist page)
-	
+
 	if (starImage !== null) // Album or artist page
 	{
 		var artistNameNode = document.getElementById("starImage").parentElement.getElementsByTagName("span")[0];
