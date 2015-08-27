@@ -1,14 +1,14 @@
 // ==UserScript==
-// @name				Sputnik Grade Extractor
-// @namespace	 roulyo
-// @include		 http://subsonic.mogmi.fr/*
-// @version		 1
-// @grant			 GM_xmlhttpRequest
+// @name	Sputnik Grade Extractor
+// @namespace	roulyo
+// @include	http://subsonic.mogmi.fr/*
+// @version	1.3
+// @grant	GM_xmlhttpRequest
 // ==/UserScript==
 
 if (window.frameElement.name !== "main")
 {
-		return;
+	return;
 }
 
 const STATE_COMPLETE = 4;
@@ -131,9 +131,9 @@ function debugLog(str)
 function formatText(artist_in)
 {
 	return removeDiacritics(artist_in.replace(/(^\s+)(.*)(\s+$)/g, "\\$2")
-									 .replace(/\\/g, "")
-									 .replace(/&nbsp;/g, "")
-									 .toLowerCase());
+					 .replace(/\\/g, "")
+					 .replace(/&nbsp;/g, "")
+					 .toLowerCase());
 }
 
 function applyRatingOnThumbnail(artist, album)
