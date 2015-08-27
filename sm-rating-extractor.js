@@ -2,7 +2,7 @@
 // @name	Sputnik Grade Extractor
 // @namespace	roulyo
 // @include	http://subsonic.mogmi.fr/*
-// @version	1.3
+// @version	1.4
 // @grant	GM_xmlhttpRequest
 // ==/UserScript==
 
@@ -13,7 +13,7 @@ if (window.frameElement.name !== "main")
 
 const STATE_COMPLETE = 4;
 const HTTP_OK = 200;
-const _DEBUG = false;
+const _DEBUG = true;
 
 var gArtistTable = {};
 var defaultDiacriticsRemovalap = [
@@ -239,6 +239,7 @@ function getSputnikArtistRatings(artist)
 function getRatingsForArtists()
 {
 	var starImage = document.getElementById("starImage");
+	var albumThumbnails = document.getElementsByClassName("albumThumb");
 	var artists = [];
 	var artist = {}; // Created on a global scope (default case : album or artist page)
 
@@ -250,7 +251,15 @@ function getRatingsForArtists()
 		artist.albums = [];
 		if (artistNameNodeDeeper.length > 0) // Album page
 		{
+			var thumbnail = albumThumbnails[0];
+			var album = {};
+
+			album.name = formatText(artistNameNode.innerHTML.replace(/<.*\/.*>/g, "").replace(/»/g, "").replace(/\[.*\] /, ""));
+			debugLog("We are on album page and main album is: " + album.name);
+			album.tag = thumbnail;
+
 			artist.name = formatText(artistNameNodeDeeper[0].innerHTML);
+			artist.albums.push(album);
 		}
 		else // Artist page
 		{
@@ -258,9 +267,7 @@ function getRatingsForArtists()
 		}
 	}
 
-	var albumThumbnails = document.getElementsByClassName("albumThumb");
-
-	for (var i = 0; i < albumThumbnails.length; ++i)
+	for (var i = 1; i < albumThumbnails.length; ++i)
 	{
 		var thumbnail = albumThumbnails[i];
 		var a = thumbnail.getElementsByTagName("a")[0];
