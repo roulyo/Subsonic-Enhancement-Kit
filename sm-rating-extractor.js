@@ -242,12 +242,12 @@ function getRatingsForArtists()
 	var albumThumbnails = document.getElementsByClassName("albumThumb");
 	var artists = [];
 	var artist = {}; // Created on a global scope (default case : album or artist page)
+	var i = 0;
 
 	if (starImage !== null) // Album or artist page
 	{
 		var artistNameNode = document.getElementById("starImage").parentElement.getElementsByTagName("span")[0];
 		var artistNameNodeDeeper = artistNameNode.getElementsByTagName("a");
-		var i = 0;
 
 		artist.albums = [];
 		if (artistNameNodeDeeper.length > 0) // Album page
