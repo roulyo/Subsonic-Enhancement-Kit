@@ -118,7 +118,7 @@ function removeDiacritics (str) {
 	return str.replace(/[^\u0000-\u007E]/g, function(a){ 
 		return diacriticsMap[a] || a; 
 	});
-}		
+}
 
 function debugLog(str)
 {
@@ -137,7 +137,7 @@ function formatText(artist_in)
 }
 
 function applyRatingOnThumbnail(artist, album)
-{ 
+{
 	var rating = gArtistTable[artist.name][album.name];
 	var a = album.tag.getElementsByTagName("a")[0];
 	var parent = a.parentElement;
@@ -157,11 +157,11 @@ function applyRatingOnThumbnail(artist, album)
 	ratingLink.style.right = "10px";
 	ratingLink.style.bottom = "10px";
 	ratingLink.style.textShadow = "0px 0px 5px black";
-	
+
 	ratingLink.appendChild(text);
 	ratingLink.title = "To the Sputnik machine!"
 	ratingLink.href = album.link.replace(/.*\.mogmi\.fr/, "http://www.sputnikmusic.com");
-	
+
 	//parent.addEventListener("mouseenter", function() { parent.appendChild(p); });
 	//parent.addEventListener("mouseleave",	function() { parent.removeChild(p); });
 	parent.appendChild(ratingLink);
@@ -180,9 +180,9 @@ function extractRatings(document, artist)
 	{
 		var album = artist.albums[i];
 		var albumNode = null;
-		
+
 		debugLog("Looking for album: " + album.name + " in " + fonts.length + " tags");
-		
+
 		for (var j = 0; j < fonts.length; ++j)
 		{
 			if (fonts[j].innerHTML.toLowerCase() == album.name)
@@ -190,7 +190,7 @@ function extractRatings(document, artist)
 				debugLog("Album found: " + fonts[j].innerHTML);
 				albumNode = fonts[j].parentElement.parentElement.parentElement.parentElement;
 				album.link = fonts[j].parentElement.href;
-				
+
 				break;
 			}
 		}
@@ -220,7 +220,7 @@ function getSputnikArtistRatings(artist)
 	else
 	{
 		var artistURIed = encodeURIComponent(artist.name);
-		
+
 		debugLog("GET http://www.sputnikmusic.com/search_results.php?search_in=Bands&search_text=" + artistURIed);
 		GM_xmlhttpRequest({
 			method: "GET",
@@ -247,6 +247,7 @@ function getRatingsForArtists()
 	{
 		var artistNameNode = document.getElementById("starImage").parentElement.getElementsByTagName("span")[0];
 		var artistNameNodeDeeper = artistNameNode.getElementsByTagName("a");
+		var i = 0;
 
 		artist.albums = [];
 		if (artistNameNodeDeeper.length > 0) // Album page
@@ -260,6 +261,7 @@ function getRatingsForArtists()
 
 			artist.name = formatText(artistNameNodeDeeper[0].innerHTML);
 			artist.albums.push(album);
+			++i;
 		}
 		else // Artist page
 		{
@@ -267,15 +269,15 @@ function getRatingsForArtists()
 		}
 	}
 
-	for (var i = 1; i < albumThumbnails.length; ++i)
+	for (; i < albumThumbnails.length; ++i)
 	{
 		var thumbnail = albumThumbnails[i];
 		var a = thumbnail.getElementsByTagName("a")[0];
 		var album = {};
-		
+
 		album.name = formatText(a.getAttribute("title").replace(/\[.*\] /, ""));
 		album.tag = thumbnail;
-		
+
 		if (starImage === null) // Home page
 		{
 			// TODO : Put albums of a same artist in the same object (look for 
@@ -288,7 +290,7 @@ function getRatingsForArtists()
 			artists.push(artist);
 		}
 		else
-		{	
+		{
 			if (album.name != "")
 			{
 				debugLog("Adding album " + album.name + " to " + artist.name);
