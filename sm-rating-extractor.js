@@ -13,7 +13,7 @@ if (window.frameElement.name !== "main")
 
 const STATE_COMPLETE = 4;
 const HTTP_OK = 200;
-const _DEBUG = true;
+const _DEBUG = false;
 
 var gArtistTable = {};
 var defaultDiacriticsRemovalap = [
