@@ -2,7 +2,7 @@
 // @name	Sputnik Grade Extractor
 // @namespace	roulyo
 // @include	http://subsonic.mogmi.fr/*
-// @version	1.4
+// @version	1.4.1
 // @grant	GM_xmlhttpRequest
 // ==/UserScript==
 
@@ -197,11 +197,16 @@ function extractRatings(document, artist)
 
 		if (albumNode !== null)
 		{
-			var albumRating = albumNode.getElementsByTagName("table")[0].getElementsByTagName("tbody")[0].getElementsByTagName("tr")[0].getElementsByTagName("td")[0].getElementsByTagName("center")[0].getElementsByTagName("font")[0].getElementsByTagName("b")[0].innerHTML;
+			var albumRatingNode = albumNode.getElementsByTagName("table")[0].getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+			
+			if (albumRatingNode.length > 1)
+			{
+				var albumRating = albumRatingNode[0].getElementsByTagName("td")[0].getElementsByTagName("center")[0].getElementsByTagName("font")[0].getElementsByTagName("b")[0].innerHTML;
 
-			debugLog(album.name + " rating: " + albumRating);
-			gArtistTable[artist.name][album.name] = albumRating;
-			applyRatingOnThumbnail(artist, album);
+				debugLog(album.name + " rating: " + albumRating);
+				gArtistTable[artist.name][album.name] = albumRating;
+				applyRatingOnThumbnail(artist, album);
+			}
 		}
 	}
 }
