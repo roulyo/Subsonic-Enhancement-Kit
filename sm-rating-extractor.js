@@ -143,7 +143,7 @@ function applyRatingOnThumbnail(artist, album)
 	var parent = a.parentElement;
 
 	var ratingLink = document.createElement("a");
-  var text = document.createTextNode(parseFloat(rating).toFixed(1));
+	var text = document.createTextNode(parseFloat(rating).toFixed(1));
 
 	parent.style.position = "relative";
 
