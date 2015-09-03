@@ -1,5 +1,6 @@
 # Subsonic-Enhancement-Kit
 
-SputnikMusic-Rating-Extractor is a Greasemonkey/Tampermonkey script that displays ratings from Sputnikmusic on top of Subsonic album thumbnails.
+Subsonic-Enhancement-Kit is a bunch of Greasemonkey/Tampermonkey scripts that aim to improve the subsonic experience.
 
-Short-Bio is a Greasemonkey/Tampermonkey script that shortens the artist bios.
+- sm-rating-extractor.js displays ratings from Sputnikmusic over subsonic album thumbnails.
+- short-bio.js shortens the artist bios (since last.fm recent modifications the full bios are displayed).
