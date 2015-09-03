@@ -2,7 +2,7 @@
 // @name        Short Bio
 // @namespace   roulyo
 // @include     http://subsonic.mogmi.fr/*
-// @version     1
+// @version     1.1
 // @grant       none
 // ==/UserScript==
 
@@ -18,17 +18,21 @@ var g_done = false;
 function cutThatFuckingBio()
 {
   var bio = document.getElementById('artistBio');
-  bio.addEventListener('DOMSubtreeModified', function ()
+  
+  if (bio !== null)
   {
-    if (!g_done && bio.innerHTML != "")
+    bio.addEventListener('DOMSubtreeModified', function ()
     {
-      g_done = true; // Done at the beginning to avoid infinite recursion
-      var lastfmlnk = bio.innerHTML.match(/<a>.*>/gm);
-     
-      bio.innerHTML = bio.innerHTML.replace(/<.*>/gm, "");
-      bio.innerHTML = bio.innerHTML.substr(0, BIO_LENGTH) + '... ' + lastfmlnk;
-    }
-  });
+      if (!g_done && bio.innerHTML != "")
+      {
+        g_done = true; // Done at the beginning to avoid infinite recursion
+        var lastfmlnk = bio.innerHTML.match(/<a>.*>/gm);
+
+        bio.innerHTML = bio.innerHTML.replace(/<.*>/gm, "");
+        bio.innerHTML = bio.innerHTML.substr(0, BIO_LENGTH) + '... ' + lastfmlnk;
+      }
+    });
+  }
 }
 
 document.addEventListener('DOMContentLoaded', cutThatFuckingBio, false);
