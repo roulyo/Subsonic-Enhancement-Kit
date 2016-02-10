@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name	Sputnik Grade Extractor
+// @name		Sputnik Grade Extractor
 // @namespace	roulyo
-// @include	http://subsonic.mogmi.fr/*
-// @version	1.4.1
-// @grant	GM_xmlhttpRequest
+// @include		http://subsonic.mogmi.fr/*
+// @version		2.0
+// @grant		GM_xmlhttpRequest
 // ==/UserScript==
 
 if (window.frameElement.name !== "main")
@@ -15,7 +15,6 @@ const STATE_COMPLETE = 4;
 const HTTP_OK = 200;
 const _DEBUG = false;
 
-var gArtistTable = {};
 var defaultDiacriticsRemovalap = [
 	{'base':'A', 'letters':'\u0041\u24B6\uFF21\u00C0\u00C1\u00C2\u1EA6\u1EA4\u1EAA\u1EA8\u00C3\u0100\u0102\u1EB0\u1EAE\u1EB4\u1EB2\u0226\u01E0\u00C4\u01DE\u1EA2\u00C5\u01FA\u01CD\u0200\u0202\u1EA0\u1EAC\u1EB6\u1E00\u0104\u023A\u2C6F'},
 	{'base':'AA','letters':'\uA732'},
@@ -130,21 +129,35 @@ function debugLog(str)
 
 function formatText(artist_in)
 {
+	// We need to operate a second replacement to remove the first space.
+	// TODO : investigate why the fuck...
 	return removeDiacritics(artist_in.replace(/^\s+|\s+$|\s+(?=\s)|\\|&nbsp;/g, "").replace(/^ /, "").toLowerCase());
+}
+
+function getArtistFromCollection(artistName, artists)
+{
+	for (var i = 0; i < artists.length; ++i)
+	{
+		if (artists[i].name == artistName)
+		{
+			return artists[i];
+		}
+	}
+
+	return { name: "" };
 }
 
 function applyRatingOnThumbnail(artist, album)
 {
-	var rating = gArtistTable[artist.name][album.name];
-	var a = album.tag.getElementsByTagName("a")[0];
-	var parent = a.parentElement;
+	var thumbnail = album.tag.getElementsByTagName("a")[0];
+	var thumbParent = thumbnail.parentElement;
 
 	var ratingLink = document.createElement("a");
-	var text = document.createTextNode(parseFloat(rating).toFixed(1));
+	var ratingText = document.createTextNode(parseFloat(album.rating).toFixed(1));
 
-	parent.style.position = "relative";
+	thumbParent.style.position = "relative";
 
-	a.style.position = "absolute";
+	thumbnail.style.position = "absolute";
 
 	ratingLink.style.zIndex = 100;
 	ratingLink.style.position = "absolute";
@@ -155,23 +168,16 @@ function applyRatingOnThumbnail(artist, album)
 	ratingLink.style.bottom = "10px";
 	ratingLink.style.textShadow = "0px 0px 5px black";
 
-	ratingLink.appendChild(text);
+	ratingLink.appendChild(ratingText);
 	ratingLink.title = "To the Sputnik machine!"
 	ratingLink.href = album.link.replace(/.*\.mogmi\.fr/, "http://www.sputnikmusic.com");
 
-	//parent.addEventListener("mouseenter", function() { parent.appendChild(p); });
-	//parent.addEventListener("mouseleave",	function() { parent.removeChild(p); });
-	parent.appendChild(ratingLink);
+	thumbParent.appendChild(ratingLink);
 }
 
 function extractRatings(document, artist)
 {
 	var fonts = document.getElementsByTagName("font");
-
-	if (!(artist.name in gArtistTable))
-	{
-		gArtistTable[artist.name] = {};
-	}
 
 	for (var i = 0; i < artist.albums.length; ++i)
 	{
@@ -201,7 +207,7 @@ function extractRatings(document, artist)
 				var albumRating = albumRatingNode[0].getElementsByTagName("td")[0].getElementsByTagName("center")[0].getElementsByTagName("font")[0].getElementsByTagName("b")[0].innerHTML;
 
 				debugLog(album.name + " rating: " + albumRating);
-				gArtistTable[artist.name][album.name] = albumRating;
+				album.rating = albumRating;
 				applyRatingOnThumbnail(artist, album);
 			}
 		}
@@ -210,54 +216,42 @@ function extractRatings(document, artist)
 
 function getSputnikArtistRatings(artist)
 {
-	if (artist.name in gArtistTable)
-	{
-		for (var i = 0; i < artist.albums.length; ++i)
+	var artistURIed = encodeURIComponent(artist.name);
+
+	debugLog("GET http://www.sputnikmusic.com/search_results.php?search_in=Bands&search_text=" + artistURIed);
+	GM_xmlhttpRequest({
+		method: "GET",
+		url: "http://www.sputnikmusic.com/search_results.php?search_in=Bands&search_text=" + artistURIed,
+		onreadystatechange: function (response)
 		{
-			var album = artist.albums[i];
-
-			applyRatingOnThumbnail(album.tag, artist.name, album.name);
-		}
-	}
-	else
-	{
-		var artistURIed = encodeURIComponent(artist.name);
-
-		debugLog("GET http://www.sputnikmusic.com/search_results.php?search_in=Bands&search_text=" + artistURIed);
-		GM_xmlhttpRequest({
-			method: "GET",
-			url: "http://www.sputnikmusic.com/search_results.php?search_in=Bands&search_text=" + artistURIed,
-			onreadystatechange: function (response)
+			if (response.readyState == STATE_COMPLETE && response.status == HTTP_OK)
 			{
-				if (response.readyState == STATE_COMPLETE && response.status == HTTP_OK)
-				{
-					extractRatings(new DOMParser().parseFromString(response.responseText, "text/html"), artist);
-				}
+				extractRatings(new DOMParser().parseFromString(response.responseText, "text/html"), artist);
 			}
-		});
-	}
+		}
+	});
 }
 
 function getRatingsForArtists()
 {
-	var artistImage = document.getElementById("artistThumbImage");
+	var isHomePage = (document.getElementById("artistThumbImage") === null);
 	var albumThumbnails = document.getElementsByClassName("albumThumb");
 	var artists = [];
-	var artist = {}; // Created on a global scope (default case : album or artist page)
+	var artist = {}; // Function scoped artist for album and artist pages.
 	var i = 0;
 
-	if (artistImage !== null) // Album or artist page
+	if (!isHomePage) // Album or artist page
 	{
 		var artistNameNode = document.getElementById("artistThumbImage").parentElement.getElementsByTagName("h1")[0];
 		var artistNameNodeDeeper = artistNameNode.getElementsByTagName("a");
 
 		artist.albums = [];
-		if (artistNameNodeDeeper.length > 0) // Album page
+		if (artistNameNodeDeeper.length > 0) // Album page, taking care of main album
 		{
 			var thumbnail = albumThumbnails[0];
 			var album = {};
 
-			album.name = formatText(artistNameNode.innerHTML.replace(/<.*\/.*>|•|\[.*\] /g, ""));
+			album.name = formatText(artistNameNode.innerHTML.replace(/<.*\/.*>|•|\[.*\] /g, "")); //.replace(/•/g, "").replace(/\[.*\] /, ""));
 			debugLog("We are on album page and main album is: " + album.name);
 			album.tag = thumbnail;
 
@@ -270,39 +264,42 @@ function getRatingsForArtists()
 			artist.name = formatText(artistNameNode.innerHTML);
 		}
 	}
-
+	
 	for (; i < albumThumbnails.length; ++i)
 	{
 		var thumbnail = albumThumbnails[i];
-		var a = thumbnail.getElementsByTagName("a")[0];
+		var thumbLink = thumbnail.getElementsByTagName("a")[0];
 		var album = {};
 
-		album.name = formatText(a.getAttribute("title").replace(/\[.*\] /, ""));
+		album.name = formatText(thumbLink.getAttribute("title").replace(/\[.*\] /, ""));
 		album.tag = thumbnail;
 
-		if (artistImage === null) // Home page
+		if (isHomePage)
 		{
-			// TODO : Put albums of a same artist in the same object (look for 
-			var artist = {};
+			artistName = formatText(thumbnail.getElementsByClassName("caption2")[0].innerHTML);
 
-			artist.name = formatText(thumbnail.getElementsByClassName("caption2")[0].innerHTML);
-			artist.albums = [];
-			artist.albums.push(album);
+			var artist = getArtistFromCollection(artistName, artists);
 
-			artists.push(artist);
+			if (artist.name == "")
+			{
+				artist.name = artistName;
+				artist.albums = [];
+				artists.push(artist);
+			}
+			
+			artist.albums.push(album);			
 		}
 		else
 		{
 			if (album.name != "")
 			{
 				debugLog("Adding album " + album.name + " to " + artist.name);
-				artist.albums.push(album); // Artist here is the global scope one
+				artist.albums.push(album); // function scoped artist.
 			}
 		}
 	}
 
-	// Once we added all albums to the default artist, we push it
-	if (artistImage !== null)
+	if (!isHomePage)
 	{
 		artists.push(artist);
 	}
