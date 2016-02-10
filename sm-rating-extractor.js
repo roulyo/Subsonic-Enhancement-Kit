@@ -130,10 +130,7 @@ function debugLog(str)
 
 function formatText(artist_in)
 {
-	return removeDiacritics(artist_in.replace(/(^\s+)(.*)(\s+$)/g, "\\$2")
-					 .replace(/\\/g, "")
-					 .replace(/&nbsp;/g, "")
-					 .toLowerCase());
+	return removeDiacritics(artist_in.replace(/^\s+|\s+$|\s+(?=\s)|\\|&nbsp;/g, "").replace(/^ /, "").toLowerCase());
 }
 
 function applyRatingOnThumbnail(artist, album)
@@ -243,15 +240,15 @@ function getSputnikArtistRatings(artist)
 
 function getRatingsForArtists()
 {
-	var starImage = document.getElementById("starImage");
+	var artistImage = document.getElementById("artistThumbImage");
 	var albumThumbnails = document.getElementsByClassName("albumThumb");
 	var artists = [];
 	var artist = {}; // Created on a global scope (default case : album or artist page)
 	var i = 0;
 
-	if (starImage !== null) // Album or artist page
+	if (artistImage !== null) // Album or artist page
 	{
-		var artistNameNode = document.getElementById("starImage").parentElement.getElementsByTagName("span")[0];
+		var artistNameNode = document.getElementById("artistThumbImage").parentElement.getElementsByTagName("h1")[0];
 		var artistNameNodeDeeper = artistNameNode.getElementsByTagName("a");
 
 		artist.albums = [];
@@ -260,7 +257,7 @@ function getRatingsForArtists()
 			var thumbnail = albumThumbnails[0];
 			var album = {};
 
-			album.name = formatText(artistNameNode.innerHTML.replace(/<.*\/.*>/g, "").replace(/»/g, "").replace(/\[.*\] /, ""));
+			album.name = formatText(artistNameNode.innerHTML.replace(/<.*\/.*>|•|\[.*\] /g, ""));
 			debugLog("We are on album page and main album is: " + album.name);
 			album.tag = thumbnail;
 
@@ -283,7 +280,7 @@ function getRatingsForArtists()
 		album.name = formatText(a.getAttribute("title").replace(/\[.*\] /, ""));
 		album.tag = thumbnail;
 
-		if (starImage === null) // Home page
+		if (artistImage === null) // Home page
 		{
 			// TODO : Put albums of a same artist in the same object (look for 
 			var artist = {};
@@ -305,7 +302,7 @@ function getRatingsForArtists()
 	}
 
 	// Once we added all albums to the default artist, we push it
-	if (starImage !== null)
+	if (artistImage !== null)
 	{
 		artists.push(artist);
 	}
