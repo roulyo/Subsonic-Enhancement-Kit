@@ -4,3 +4,4 @@ Subsonic-Enhancement-Kit is a bunch of Greasemonkey/Tampermonkey scripts that ai
 
 - sm-rating-extractor.js displays ratings from Sputnikmusic over subsonic album thumbnails.
 - short-bio.js shortens the artist bios (since last.fm recent modifications the full bios are displayed).
+- lyrics.js hijacks subsonic lyrics button with lyrics from lyrics.wikia.com.
