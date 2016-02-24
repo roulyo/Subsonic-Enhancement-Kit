@@ -2,7 +2,7 @@
 // @name        Working lyrics
 // @namespace   roulyo
 // @include     http://subsonic.mogmi.fr/*
-// @version     1.0
+// @version     1.1
 // @grant       none
 // ==/UserScript==
 
@@ -23,10 +23,10 @@ function swapLyricsLink()
     {
         var lyricsLink = lyricsLinks[i];
         var grandParent = lyricsLink.parentElement.parentElement;
-        var album = encodeURIComponent(grandParent.getElementsByClassName("now-playing-title")[0].innerHTML);
+        var title = encodeURIComponent(grandParent.getElementsByClassName("now-playing-title")[0].innerHTML);
         var artist = encodeURIComponent(grandParent.getElementsByClassName("now-playing-artist")[0].innerHTML);
         
-        lyricsLink.href = "http://lyrics.wikia.com/wiki/" + artist + ":" + album;
+        lyricsLink.href = "http://lyrics.mogmi.fr/artist/" + artist + "/track/" + title;
     }
 
     document.addEventListener("DOMSubtreeModified", swapLyricsLink, false);
