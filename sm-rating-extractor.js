@@ -242,26 +242,28 @@ function getRatingsForArtists()
 
 	if (!isHomePage) // Album or artist page
 	{
-		var artistNameNode = document.getElementById("artistThumbImage").parentElement.getElementsByTagName("h1")[0];
-		var artistNameNodeDeeper = artistNameNode.getElementsByTagName("a");
+		var header = document.getElementById("artistThumbImage").parentElement;
+		var pageNameNode = header.getElementsByTagName("h1")[0];
+		var breadcrumb = header.getElementsByTagName("a");
 
 		artist.albums = [];
-		if (artistNameNodeDeeper.length > 0) // Album page, taking care of main album
+		if (breadcrumb.length > 1) // Album page, taking care of main album
 		{
 			var thumbnail = albumThumbnails[0];
+			var artistNameNode = breadcrumb[1];
 			var album = {};
 
-			album.name = formatText(artistNameNode.innerHTML.replace(/<.*\/.*>|•|\[.*\] /g, "")); //.replace(/•/g, "").replace(/\[.*\] /, ""));
+			album.name = formatText(pageNameNode.innerHTML.replace(/<.*\/.*>|•|\[.*\] /g, ""));
 			debugLog("We are on album page and main album is: " + album.name);
 			album.tag = thumbnail;
 
-			artist.name = formatText(artistNameNodeDeeper[0].innerHTML);
+			artist.name = formatText(artistNameNode.innerHTML);
 			artist.albums.push(album);
 			++i;
 		}
 		else // Artist page
 		{
-			artist.name = formatText(artistNameNode.innerHTML);
+			artist.name = formatText(pageNameNode.innerHTML);
 		}
 	}
 	
@@ -287,7 +289,7 @@ function getRatingsForArtists()
 				artists.push(artist);
 			}
 			
-			artist.albums.push(album);			
+			artist.albums.push(album);
 		}
 		else
 		{
@@ -309,5 +311,4 @@ function getRatingsForArtists()
 		getSputnikArtistRatings(artists[i]);
 	}
 }
-
 document.addEventListener("DOMContentLoaded", getRatingsForArtists, false);
