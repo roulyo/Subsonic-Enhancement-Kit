@@ -18,8 +18,13 @@ function getFatArts()
     {
         document.removeEventListener("DOMSubtreeModified", getFatArts, false);
 
-        var img = document.getElementsByClassName("search-result-link")[0];
-        img.href = img.href.replace(/300x300\//, "");
+        var imgs = document.getElementsByClassName("search-result-link");
+
+        for (var i = 0; i < imgs.length; ++i)
+        {
+            var img = imgs[i];
+            img.href = img.href.replace(/300x300\//, "");
+        }
 
         document.addEventListener("DOMSubtreeModified", getFatArts, false);
     }
