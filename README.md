@@ -2,6 +2,11 @@
 
 Subsonic-Enhancement-Kit is a bunch of Greasemonkey/Tampermonkey scripts that aim to improve the subsonic experience.
 
-- sm-rating-extractor.js displays ratings from Sputnikmusic over subsonic album thumbnails.
-- short-bio.js shortens the artist bios (since last.fm recent modifications the full bios are displayed).
-- lyrics.js hijacks subsonic lyrics button with lyrics from lyrics.wikia.com.
+- better-with-thumbnail:    Displays directories in artist view as albums.
+- fat-art:                  Removes the 300x300 restriction when downloading last.fm album artworks.
+- lyrics:                   Makes the lyrics button fetch lyrics from lyrics.wikia.com
+- randombar:                Adds a quick access random button to generate playlists from home page.
+- [overdated] short-bio:    Shortens the artist bios (since last.fm recent modifications the full bios are displayed).
+- sm-rating-extractor:      Displays ratings from Sputnikmusic over subsonic album thumbnails.
+
+
