@@ -234,7 +234,8 @@ function getSputnikArtistRatings(artist)
 
 function getRatingsForArtists()
 {
-	var isHomePage = (document.getElementById("artistThumbImage") === null);
+	var isHomePage = (document.getElementsByClassName("artistimage").length == 0);
+	debugLog("Is home page ? : " + isHomePage );
 	var albumThumbnails = document.getElementsByClassName("albumThumb");
 	var artists = [];
 	var artist = {}; // Function scoped artist for album and artist pages.
@@ -242,7 +243,7 @@ function getRatingsForArtists()
 
 	if (!isHomePage) // Album or artist page
 	{
-		var header = document.getElementById("artistThumbImage").parentElement;
+		var header = document.getElementsByClassName("artistimage")[0].parentElement.parentElement;
 		var pageNameNode = header.getElementsByTagName("h1")[0];
 		var breadcrumb = header.getElementsByTagName("a");
 
@@ -264,6 +265,7 @@ function getRatingsForArtists()
 		else // Artist page
 		{
 			artist.name = formatText(pageNameNode.innerHTML);
+			debugLog("We are on artist page: " + artist.name);
 		}
 	}
 	
