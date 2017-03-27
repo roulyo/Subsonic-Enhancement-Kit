@@ -17,7 +17,7 @@ const thumbnailTemplate = "<div class=\"albumThumb\" style=\"display: inline-blo
 
 function Thumbnailize()
 {
-    var isAlbumPage = (document.getElementById("artistThumbImage") !== null);
+    var isAlbumPage = (document.getElementsByClassName("artistimage").length !== 0);
 
     if (isAlbumPage) // Album or artist page
     {
@@ -83,7 +83,7 @@ function getNewThumbnail(album)
 function getCoverArt(thumbnail)
 {
     var albumURIed = encodeURIComponent(thumbnail.name);
-    var artistURIed = encodeURIComponent(document.getElementById("artistThumbImage").parentElement.getElementsByTagName("h1")[0].innerHTML);
+    var artistURIed = encodeURIComponent(document.getElementsByClassName("artistimage")[0].parentElement.parentElement.getElementsByTagName("h1")[0].innerHTML);
 
     GM_xmlhttpRequest({
         method: "GET",
