@@ -25,8 +25,14 @@ function swapLyricsLink()
         var grandParent = lyricsLink.parentElement.parentElement;
         var title = encodeURIComponent(grandParent.getElementsByClassName("now-playing-title")[0].innerHTML);
         var artist = encodeURIComponent(grandParent.getElementsByClassName("now-playing-artist")[0].innerHTML);
+        var newLyricsLink = document.createElement("a");
+
+        newLyricsLink.href = "http://lyrics.mogmi.fr/artist/" + artist + "/track/" + title;
+        newLyricsLink.innerText = "Lyrics";
+        newLyricsLink.className = "now-playing-lyrics clickable";
+        newLyricsLink.target = "_blank";
         
-        lyricsLink.href = "http://lyrics.mogmi.fr/artist/" + artist + "/track/" + title;
+        lyricsLink.parentNode.replaceChild(newLyricsLink, lyricsLink);
     }
 
     document.addEventListener("DOMSubtreeModified", swapLyricsLink, false);
