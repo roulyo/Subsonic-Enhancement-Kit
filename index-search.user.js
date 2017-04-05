@@ -28,6 +28,7 @@ function addLinkToDiv()
         link.href = "javaScript:void(0);"
         link.class = span.class;
         link.innerHTML = span.textContent;
+        link.style.textDecoration = "none";
 
         span.parentNode.replaceChild(link, span);
     }
