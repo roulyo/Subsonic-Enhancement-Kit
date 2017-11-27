@@ -250,6 +250,13 @@ function getRatingsForArtists()
             var artistNameNode = breadcrumb[1];
             var album = {};
 
+            debugLog(breadcrumb);
+            if (breadcrumb.length > 2)
+            {
+                debugLog("DOUBLE ALBUM OMFG");
+                pageNameNode = breadcrumb[2];
+            }
+
             album.name = formatText(pageNameNode.innerHTML.replace(/<.*\/.*>|•|\[.*\] /g, ""));
             debugLog("We are on album page and main album is: " + album.name);
             album.tag = thumbnail;
