@@ -7,11 +7,6 @@
 // ==/UserScript==
 
 
-if (window.frameElement.name !== "main")
-{
-    return;
-}
-
 function getFatArts()
 {
     if (document.getElementsByTagName("h1")[0].innerHTML === "Change cover art")
@@ -30,4 +25,12 @@ function getFatArts()
     }
 }
 
-document.addEventListener("DOMSubtreeModified", getFatArts, false);
+
+(function() {
+    'use strict';
+
+    if (window.frameElement && window.frameElement.name === "main")
+    {
+        getFatArts();
+    }
+})();
