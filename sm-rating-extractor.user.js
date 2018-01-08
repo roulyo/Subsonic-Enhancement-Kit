@@ -182,7 +182,7 @@
         ratingLink.style.textShadow = "0px 0px 5px black";
 
         ratingLink.appendChild(ratingText);
-        ratingLink.title = album.voteQty + " votes on SuptnikMusic.";
+        ratingLink.title = album.voteQty + " votes on votes on suptnikmusic.com";
         ratingLink.href = album.link.replace(/.*\.mogmi\.fr/, "http://www.sputnikmusic.com");
 
         var voteQtyNode = document.createElement("span");
