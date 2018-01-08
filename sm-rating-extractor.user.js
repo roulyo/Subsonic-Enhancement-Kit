@@ -151,6 +151,15 @@
         return { name: "" };
     }
 
+    function getColorByQty(voteQty)
+    {
+        var green = voteQty < 255 ? voteQty : 255;
+        var excess = voteQty > 255 ? voteQty - 255 : 0;
+        var red = 255 - excess > 0 ? 255 - excess : 0;
+           
+        return "rgba("+ red + "," + green + ", 0, 1)";
+    }
+  
     function applyRatingOnThumbnail(artist, album)
     {
         var thumbnail = album.tag.getElementsByTagName("a")[0];
@@ -170,7 +179,7 @@
         ratingLink.style.fontWeight = "bold";
         ratingLink.style.right = "10px";
         ratingLink.style.bottom = "10px";
-        ratingLink.style.textShadow = "0px 0px 5px black";
+        ratingLink.style.textShadow = "0px 0px 5px " + getColorByQty(album.voteQty);
 
         ratingLink.appendChild(ratingText);
         ratingLink.title = "To the Sputnik machine!";
@@ -209,9 +218,11 @@
                 if (albumRatingNode.length > 1)
                 {
                     var albumRating = albumRatingNode[0].getElementsByTagName("td")[0].getElementsByTagName("center")[0].getElementsByTagName("font")[0].getElementsByTagName("b")[0].innerHTML;
-
-                    debugLog(album.name + " rating: " + albumRating);
+                    var voteQty = albumRatingNode[0].getElementsByTagName("td")[0].getElementsByTagName("center")[0].getElementsByTagName("font")[1].innerHTML.replace(/\D+/g, '');
+                  
+                    debugLog(album.name + " rating: " + albumRating + ", votes: " + voteQty);
                     album.rating = albumRating;
+                    album.voteQty = voteQty;
                     applyRatingOnThumbnail(artist, album);
                 }
             }
