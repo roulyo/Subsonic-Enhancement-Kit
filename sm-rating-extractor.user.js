@@ -175,6 +175,7 @@
         ratingLink.style.zIndex = 100;
         ratingLink.style.position = "absolute";
         ratingLink.style.color = "white";
+        ratingLink.style.textDecorationColor = getColorByQty(album.voteQty);
         ratingLink.style.fontSize = "30px";
         ratingLink.style.fontWeight = "bold";
         ratingLink.style.right = "10px";
@@ -182,14 +183,15 @@
         ratingLink.style.textShadow = "0px 0px 5px black";
 
         ratingLink.appendChild(ratingText);
-        ratingLink.title = album.voteQty + " votes on votes on suptnikmusic.com";
+        ratingLink.title = album.voteQty + " votes on suptnikmusic.com";
         ratingLink.href = album.link.replace(/.*\.mogmi\.fr/, "http://www.sputnikmusic.com");
 
-        var voteQtyNode = document.createElement("span");
-        voteQtyNode.innerHTML = " °";
-        voteQtyNode.style.color = getColorByQty(album.voteQty);
+        //var voteQtyNode = document.createElement("span");
+        //voteQtyNode.innerHTML = " °";
+        //voteQtyNode.style.color = getColorByQty(album.voteQty);
+        
       
-        ratingLink.appendChild(voteQtyNode);
+        //ratingLink.appendChild(voteQtyNode);
         thumbParent.appendChild(ratingLink);
     }
 
