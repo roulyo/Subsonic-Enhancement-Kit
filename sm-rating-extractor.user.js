@@ -179,12 +179,17 @@
         ratingLink.style.fontWeight = "bold";
         ratingLink.style.right = "10px";
         ratingLink.style.bottom = "10px";
-        ratingLink.style.textShadow = "0px 0px 5px " + getColorByQty(album.voteQty);
+        ratingLink.style.textShadow = "0px 0px 5px black";
 
         ratingLink.appendChild(ratingText);
         ratingLink.title = "To the Sputnik machine!";
         ratingLink.href = album.link.replace(/.*\.mogmi\.fr/, "http://www.sputnikmusic.com");
 
+        var voteQtyNode = document.createElement("span");
+        voteQtyNode.innerHTML = " °";
+        voteQtyNode.style.color = getColorByQty(album.voteQty);
+      
+        ratingLink.appendChild(voteQtyNode);
         thumbParent.appendChild(ratingLink);
     }
 
