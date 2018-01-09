@@ -17,7 +17,8 @@
     const STATE_COMPLETE = 4;
     const HTTP_OK = 200;
     const _DEBUG = false;
-
+    const VOTE_THRESHOLD = 100;
+  
     var defaultDiacriticsRemovalap = [
         {'base':'A', 'letters':'\u0041\u24B6\uFF21\u00C0\u00C1\u00C2\u1EA6\u1EA4\u1EAA\u1EA8\u00C3\u0100\u0102\u1EB0\u1EAE\u1EB4\u1EB2\u0226\u01E0\u00C4\u01DE\u1EA2\u00C5\u01FA\u01CD\u0200\u0202\u1EA0\u1EAC\u1EB6\u1E00\u0104\u023A\u2C6F'},
         {'base':'AA','letters':'\uA732'},
@@ -152,11 +153,16 @@
     }
 
     function getColorByQty(voteQty)
-    {
-        var green = voteQty < 255 ? voteQty : 255;
-        var excess = voteQty > 255 ? voteQty - 255 : 0;
-        var red = 255 - excess > 0 ? 255 - excess : 0;
+    {       
+        const MID = VOTE_THRESHOLD / 2;
+      
+        var green = voteQty < MID ? voteQty : MID;
+        var excess = voteQty > MID ? voteQty - MID : 0;
+        var red = MID - excess > 0 ? MID - excess : 0;
            
+        green = (green * 255) / MID;
+        red = (red * 255) / MID;
+      
         return "rgba("+ red + "," + green + ", 0, 1)";
     }
   
