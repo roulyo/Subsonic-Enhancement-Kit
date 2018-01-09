@@ -64,7 +64,13 @@
 
             randomBarNode.style.fontSize = "15px";
             randomBarNode.style.float = "right";
-
+            
+            var button = randomBarNode.getElementsByTagName("input")[0];
+            button.style.background = "linear-gradient(to right, red,orange,yellow,green,blue,indigo,violet)";
+            button.style.color = "white";
+            button.style.textShadow = "0px 0px 5px black";
+            button.style.fontWeight = "bold";
+          
             homeAnchor[0].parentElement.appendChild(randomBarNode);
         }
     }
