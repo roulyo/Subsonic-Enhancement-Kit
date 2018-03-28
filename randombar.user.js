@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Random bar
 // @namespace   roulyo
-// @include     http://subsonic.mogmi.fr/*
+// @include     https://subsonic.mogmi.fr/*
 // @version     1
 // @grant       none
 // ==/UserScript==
