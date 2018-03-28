@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Double album thumbnail
 // @namespace   roulyo
-// @include     http://subsonic.mogmi.fr/*
+// @include     https://subsonic.mogmi.fr/*
 // @version     1
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
