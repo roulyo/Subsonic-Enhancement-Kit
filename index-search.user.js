@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Working index search
 // @namespace   roulyo
-// @include     http://subsonic.mogmi.fr/*
+// @include     https://subsonic.mogmi.fr/*
 // @version     1.0
 // @grant       none
 // ==/UserScript==
