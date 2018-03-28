@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name		Sputnik Grade Extractor
 // @namespace	roulyo
-// @include		http://subsonic.mogmi.fr/*
+// @include		https://subsonic.mogmi.fr/*
 // @version		2.0
 // @grant		GM_xmlhttpRequest
 // ==/UserScript==
