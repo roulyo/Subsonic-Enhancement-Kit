@@ -18,7 +18,7 @@
     const HTTP_OK = 200;
     const _DEBUG = false;
     const VOTE_THRESHOLD = 100;
-  
+
     var defaultDiacriticsRemovalap = [
         {'base':'A', 'letters':'\u0041\u24B6\uFF21\u00C0\u00C1\u00C2\u1EA6\u1EA4\u1EAA\u1EA8\u00C3\u0100\u0102\u1EB0\u1EAE\u1EB4\u1EB2\u0226\u01E0\u00C4\u01DE\u1EA2\u00C5\u01FA\u01CD\u0200\u0202\u1EA0\u1EAC\u1EB6\u1E00\u0104\u023A\u2C6F'},
         {'base':'AA','letters':'\uA732'},
@@ -153,19 +153,19 @@
     }
 
     function getColorByQty(voteQty)
-    {       
+    {
         const MID = VOTE_THRESHOLD / 2;
-      
+
         var green = voteQty < MID ? voteQty : MID;
         var excess = voteQty > MID ? voteQty - MID : 0;
         var red = MID - excess > 0 ? MID - excess : 0;
-           
+
         green = (green * 255) / MID;
         red = (red * 255) / MID;
-      
+
         return "rgba("+ red + "," + green + ", 0, 1)";
     }
-  
+
     function applyRatingOnThumbnail(artist, album)
     {
         var thumbnail = album.tag.getElementsByTagName("a")[0];
@@ -190,13 +190,12 @@
 
         ratingLink.appendChild(ratingText);
         ratingLink.title = album.voteQty + " votes on suptnikmusic.com";
-        ratingLink.href = album.link.replace(/.*\.mogmi\.fr/, "http://www.sputnikmusic.com");
+        ratingLink.href = album.link.replace(/.*\.mogmi\.fr/, "https://www.sputnikmusic.com");
 
         //var voteQtyNode = document.createElement("span");
         //voteQtyNode.innerHTML = " °";
         //voteQtyNode.style.color = getColorByQty(album.voteQty);
-        
-      
+
         //ratingLink.appendChild(voteQtyNode);
         thumbParent.appendChild(ratingLink);
     }
@@ -232,7 +231,7 @@
                 {
                     var albumRating = albumRatingNode[0].getElementsByTagName("td")[0].getElementsByTagName("center")[0].getElementsByTagName("font")[0].getElementsByTagName("b")[0].innerHTML;
                     var voteQty = albumRatingNode[0].getElementsByTagName("td")[0].getElementsByTagName("center")[0].getElementsByTagName("font")[1].innerHTML.replace(/\D+/g, '');
-                  
+
                     debugLog(album.name + " rating: " + albumRating + ", votes: " + voteQty);
                     album.rating = albumRating;
                     album.voteQty = voteQty;
@@ -255,6 +254,43 @@
                 if (response.readyState == STATE_COMPLETE && response.status == HTTP_OK)
                 {
                     extractRatings(new DOMParser().parseFromString(response.responseText, "text/html"), artist);
+                }
+            }
+        });
+    }
+
+    function extractGendras(dom, artist)
+    {
+        var header = document.getElementsByClassName("artistimage")[0].parentElement.parentElement;
+        var artistName = header.getElementsByTagName("h1")[0];
+
+        if (formatText(artistName.innerText) === artist.name)
+        {
+            var gendras = dom.getElementsByClassName("tags-list")[0].getElementsByClassName("tag");
+            var gendraNode = dom.createElement("div");
+
+            for (var i = 0; i < 3 && i < gendras.length; ++i)
+            {
+                gendraNode.innerText += " • " + gendras[i].childNodes[0].innerText;
+            }
+
+            artistName.parentElement.appendChild(gendraNode);
+        }
+    }
+
+    function getArtistGendra(artist)
+    {
+        var artistURIed = encodeURIComponent(artist.name);
+
+        debugLog("GET http://www.last.fm/music/" + artistURIed);
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: "http://www.last.fm/music/" + artistURIed,
+            onreadystatechange: function (response)
+            {
+                if (response.readyState == STATE_COMPLETE && response.status == HTTP_OK)
+                {
+                    extractGendras(new DOMParser().parseFromString(response.responseText, "text/html"), artist);
                 }
             }
         });
@@ -301,6 +337,7 @@
             {
                 artist.name = formatText(pageNameNode.innerHTML);
                 debugLog("We are on artist page: " + artist.name);
+                getArtistGendra(artist);
             }
         }
 
