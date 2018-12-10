@@ -2,7 +2,7 @@
 // @name        Working index search
 // @namespace   roulyo
 // @include     https://subsonic.mogmi.fr/*
-// @version     1.0
+// @version     0.2
 // @grant       none
 // ==/UserScript==
 
@@ -16,13 +16,13 @@
 
     function addLinkToDiv()
     {
-        var index = document.getElementsByClassName("left-menu-item left-index-shortcut-artist ellipsis");
+        let index = document.getElementsByClassName("left-menu-item left-index-shortcut-artist ellipsis");
 
-        for (var i = 0; i < index.length; ++i)
+        for (let i = 0; i < index.length; ++i)
         {
-            var entry = index[i];
-            var span = entry.getElementsByClassName("ellipsis")[0];
-            var link = document.createElement("a");
+            let entry = index[i];
+            let span = entry.getElementsByClassName("ellipsis")[0];
+            let link = document.createElement("a");
 
             link.href = "javaScript:void(0);";
             link.class = span.class;
@@ -36,4 +36,3 @@
     addLinkToDiv();
 
 })();
-
