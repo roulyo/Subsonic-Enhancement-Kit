@@ -2,11 +2,12 @@
 // @name		Sputnik Grade Extractor
 // @namespace	roulyo
 // @include		https://subsonic.mogmi.fr/*
-// @version		2.0
+// @version		0.2
 // @grant		GM_xmlhttpRequest
 // ==/UserScript==
 
-(function() {
+(function()
+{
     'use strict';
 
     if (!(window.frameElement && window.frameElement.name === "main" && (document.readyState === "interactive" || document.readyState === "complete")))
@@ -19,7 +20,7 @@
     const _DEBUG = false;
     const VOTE_THRESHOLD = 100;
 
-    var defaultDiacriticsRemovalap = [
+    const defaultDiacriticsRemovalMap = [
         {'base':'A', 'letters':'\u0041\u24B6\uFF21\u00C0\u00C1\u00C2\u1EA6\u1EA4\u1EAA\u1EA8\u00C3\u0100\u0102\u1EB0\u1EAE\u1EB4\u1EB2\u0226\u01E0\u00C4\u01DE\u1EA2\u00C5\u01FA\u01CD\u0200\u0202\u1EA0\u1EAC\u1EB6\u1E00\u0104\u023A\u2C6F'},
         {'base':'AA','letters':'\uA732'},
         {'base':'AE','letters':'\u00C6\u01FC\u01E2'},
@@ -108,21 +109,33 @@
         {'base':'z','letters':'\u007A\u24E9\uFF5A\u017A\u1E91\u017C\u017E\u1E93\u1E95\u01B6\u0225\u0240\u2C6C\uA763'}
     ];
 
-    var diacriticsMap = {};
-    for (var i=0; i < defaultDiacriticsRemovalap.length; i++){
-        var letters = defaultDiacriticsRemovalap[i].letters;
-        for (var j=0; j < letters.length ; j++){
-            diacriticsMap[letters[j]] = defaultDiacriticsRemovalap[i].base;
+    let diacriticsMap = {};
+
+    for (let i = 0; i < defaultDiacriticsRemovalMap.length; ++i)
+    {
+        let letters = defaultDiacriticsRemovalMap[i].letters;
+
+        for (let j = 0; j < letters.length ; ++j)
+        {
+            let letter = letters[j];
+
+            diacriticsMap[letter] = defaultDiacriticsRemovalMap[i].base;
         }
     }
 
+    let DomParser = new DOMParser();
+
+//----------------------------------------------------------------------------
     // "what?" version ... http://jsperf.com/diacritics/12
-    function removeDiacritics (str) {
-        return str.replace(/[^\u0000-\u007E]/g, function(a){
+    function removeDiacritics(str)
+    {
+        return str.replace(/[^\u0000-\u007E]/g, function(a)
+        {
             return diacriticsMap[a] || a;
         });
     }
 
+//----------------------------------------------------------------------------
     function debugLog(str)
     {
         if (_DEBUG)
@@ -131,6 +144,7 @@
         }
     }
 
+//----------------------------------------------------------------------------
     function formatText(artist_in)
     {
         // We need to operate a second replacement to remove the first space.
@@ -138,12 +152,12 @@
         return removeDiacritics(artist_in.replace(/^\s+|\s+$|\s+(?=\s)|\\|&nbsp;/g, "").replace(/^ /, "").toLowerCase());
     }
 
-
+//----------------------------------------------------------------------------
     function getArtistFromCollection(artistName, artists)
     {
-        for (var i = 0; i < artists.length; ++i)
+        for (let i = 0; i < artists.length; ++i)
         {
-            if (artists[i].name == artistName)
+            if (artists[i].name === artistName)
             {
                 return artists[i];
             }
@@ -152,13 +166,14 @@
         return { name: "" };
     }
 
+//----------------------------------------------------------------------------
     function getColorByQty(voteQty)
     {
         const MID = VOTE_THRESHOLD / 2;
 
-        var green = voteQty < MID ? voteQty : MID;
-        var excess = voteQty > MID ? voteQty - MID : 0;
-        var red = MID - excess > 0 ? MID - excess : 0;
+        let green = voteQty < MID ? voteQty : MID;
+        let excess = voteQty > MID ? voteQty - MID : 0;
+        let red = MID - excess > 0 ? MID - excess : 0;
 
         green = (green * 255) / MID;
         red = (red * 255) / MID;
@@ -166,13 +181,14 @@
         return "rgba("+ red + "," + green + ", 0, 1)";
     }
 
+//----------------------------------------------------------------------------
     function applyRatingOnThumbnail(artist, album)
     {
-        var thumbnail = album.tag.getElementsByTagName("a")[0];
-        var thumbParent = thumbnail.parentElement;
+        let thumbnail = album.tag.getElementsByTagName("a")[0];
+        let thumbParent = thumbnail.parentElement;
 
-        var ratingLink = document.createElement("a");
-        var ratingText = document.createTextNode(parseFloat(album.rating).toFixed(1));
+        let ratingLink = document.createElement("a");
+        let ratingText = document.createTextNode(parseFloat(album.rating).toFixed(1));
 
         thumbParent.style.position = "relative";
 
@@ -192,7 +208,7 @@
         ratingLink.title = album.voteQty + " votes on suptnikmusic.com";
         ratingLink.href = album.link.replace(/.*\.mogmi\.fr/, "https://www.sputnikmusic.com");
 
-        //var voteQtyNode = document.createElement("span");
+        //let voteQtyNode = document.createElement("span");
         //voteQtyNode.innerHTML = " °";
         //voteQtyNode.style.color = getColorByQty(album.voteQty);
 
@@ -200,20 +216,21 @@
         thumbParent.appendChild(ratingLink);
     }
 
-    function extractRatings(document, artist)
+//----------------------------------------------------------------------------
+    function extractRatings(dom, artist)
     {
-        var fonts = document.getElementsByTagName("font");
+        let fonts = dom.getElementsByTagName("font");
 
-        for (var i = 0; i < artist.albums.length; ++i)
+        for (let i = 0; i < artist.albums.length; ++i)
         {
-            var album = artist.albums[i];
-            var albumNode = null;
+            let album = artist.albums[i];
+            let albumNode = null;
 
             debugLog("Looking for album: " + album.name + " in " + fonts.length + " tags");
 
-            for (var j = 0; j < fonts.length; ++j)
+            for (let j = 0; j < fonts.length; ++j)
             {
-                if (fonts[j].innerHTML.toLowerCase() == album.name)
+                if (fonts[j].innerHTML.toLowerCase() === album.name)
                 {
                     debugLog("Album found: " + fonts[j].innerHTML);
                     albumNode = fonts[j].parentElement.parentElement.parentElement.parentElement;
@@ -225,12 +242,12 @@
 
             if (albumNode !== null)
             {
-                var albumRatingNode = albumNode.getElementsByTagName("table")[0].getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+                let albumRatingNode = albumNode.getElementsByTagName("table")[0].getElementsByTagName("tbody")[0].getElementsByTagName("tr");
 
                 if (albumRatingNode.length > 1)
                 {
-                    var albumRating = albumRatingNode[0].getElementsByTagName("td")[0].getElementsByTagName("center")[0].getElementsByTagName("font")[0].getElementsByTagName("b")[0].innerHTML;
-                    var voteQty = albumRatingNode[0].getElementsByTagName("td")[0].getElementsByTagName("center")[0].getElementsByTagName("font")[1].innerHTML.replace(/\D+/g, '');
+                    let albumRating = albumRatingNode[0].getElementsByTagName("td")[0].getElementsByTagName("center")[0].getElementsByTagName("font")[0].getElementsByTagName("b")[0].innerHTML;
+                    let voteQty = albumRatingNode[0].getElementsByTagName("td")[0].getElementsByTagName("center")[0].getElementsByTagName("font")[1].innerHTML.replace(/\D+/g, '');
 
                     debugLog(album.name + " rating: " + albumRating + ", votes: " + voteQty);
                     album.rating = albumRating;
@@ -241,9 +258,10 @@
         }
     }
 
+//----------------------------------------------------------------------------
     function getSputnikArtistRatings(artist)
     {
-        var artistURIed = encodeURIComponent(artist.name);
+        let artistURIed = encodeURIComponent(artist.name);
 
         debugLog("GET http://www.sputnikmusic.com/search_results.php?search_in=Bands&search_text=" + artistURIed);
         GM_xmlhttpRequest({
@@ -251,25 +269,26 @@
             url: "http://www.sputnikmusic.com/search_results.php?search_in=Bands&search_text=" + artistURIed,
             onreadystatechange: function (response)
             {
-                if (response.readyState == STATE_COMPLETE && response.status == HTTP_OK)
+                if (response.readyState === STATE_COMPLETE && response.status === HTTP_OK)
                 {
-                    extractRatings(new DOMParser().parseFromString(response.responseText, "text/html"), artist);
+                    extractRatings(DomParser.parseFromString(response.responseText, "text/html"), artist);
                 }
             }
         });
     }
 
+//----------------------------------------------------------------------------
     function extractGendras(dom, artist)
     {
-        var header = document.getElementsByClassName("artistimage")[0].parentElement.parentElement;
-        var artistName = header.getElementsByTagName("h1")[0];
+        let header = document.getElementsByClassName("artistimage")[0].parentElement.parentElement;
+        let artistName = header.getElementsByTagName("h1")[0];
 
         if (formatText(artistName.innerText) === artist.name)
         {
-            var gendras = dom.getElementsByClassName("tags-list")[0].getElementsByClassName("tag");
-            var gendraNode = dom.createElement("div");
+            let gendras = dom.getElementsByClassName("tags-list")[0].getElementsByClassName("tag");
+            let gendraNode = dom.createElement("div");
 
-            for (var i = 0; i < 3 && i < gendras.length; ++i)
+            for (let i = 0; i < 3 && i < gendras.length; ++i)
             {
                 gendraNode.innerText += " • " + gendras[i].childNodes[0].innerText;
             }
@@ -278,9 +297,10 @@
         }
     }
 
+//----------------------------------------------------------------------------
     function getArtistGendra(artist)
     {
-        var artistURIed = encodeURIComponent(artist.name);
+        let artistURIed = encodeURIComponent(artist.name);
 
         debugLog("GET http://www.last.fm/music/" + artistURIed);
         GM_xmlhttpRequest({
@@ -288,35 +308,38 @@
             url: "http://www.last.fm/music/" + artistURIed,
             onreadystatechange: function (response)
             {
-                if (response.readyState == STATE_COMPLETE && response.status == HTTP_OK)
+                if (response.readyState === STATE_COMPLETE && response.status === HTTP_OK)
                 {
-                    extractGendras(new DOMParser().parseFromString(response.responseText, "text/html"), artist);
+                    extractGendras(DomParser.parseFromString(response.responseText, "text/html"), artist);
                 }
             }
         });
     }
 
+//----------------------------------------------------------------------------
     function getRatingsForArtists()
     {
-        var isHomePage = (document.getElementsByClassName("artistimage").length === 0);
+        let isHomePage = (document.getElementsByClassName("artistimage").length === 0);
         debugLog("Is home page ? : " + isHomePage );
-        var albumThumbnails = document.getElementsByClassName("albumThumb");
-        var artists = [];
-        var artist = {}; // Function scoped artist for album and artist pages.
-        var i = 0;
+
+        let albumThumbnails = document.getElementsByClassName("albumThumb");
+        let artists = [];
+        let mainArtist = {};
+        let i = 0;
 
         if (!isHomePage) // Album or artist page
         {
-            var header = document.getElementsByClassName("artistimage")[0].parentElement.parentElement;
-            var pageNameNode = header.getElementsByTagName("h1")[0];
-            var breadcrumb = header.getElementsByTagName("a");
+            let header = document.getElementsByClassName("artistimage")[0].parentElement.parentElement;
+            let pageNameNode = header.getElementsByTagName("h1")[0];
+            let breadcrumb = header.getElementsByTagName("a");
 
-            artist.albums = [];
+            mainArtist.albums = [];
+
             if (breadcrumb.length > 1) // Album page, taking care of main album
             {
-                var thumbnail = albumThumbnails[0];
-                var artistNameNode = breadcrumb[1];
-                var album = {};
+                let mainThumbnail = albumThumbnails[0];
+                let artistNameNode = breadcrumb[1];
+                let mainAlbum = {};
 
                 debugLog(breadcrumb);
                 if (breadcrumb.length > 2)
@@ -325,35 +348,37 @@
                     pageNameNode = breadcrumb[2];
                 }
 
-                album.name = formatText(pageNameNode.innerHTML.replace(/<.*\/.*>|•|\[.*\] /g, ""));
-                debugLog("We are on album page and main album is: " + album.name);
-                album.tag = thumbnail;
+                mainAlbum.name = formatText(pageNameNode.innerHTML.replace(/<.*\/.*>|•|\[.*\] /g, ""));
+                debugLog("We are on album page and main album is: " + mainAlbum.name);
+                mainAlbum.tag = mainThumbnail;
 
-                artist.name = formatText(artistNameNode.innerHTML);
-                artist.albums.push(album);
+                mainArtist.name = formatText(artistNameNode.innerHTML);
+                mainArtist.albums.push(mainAlbum);
                 ++i;
             }
             else // Artist page
             {
-                artist.name = formatText(pageNameNode.innerHTML);
-                debugLog("We are on artist page: " + artist.name);
-                getArtistGendra(artist);
+                mainArtist.name = formatText(pageNameNode.innerHTML);
+                debugLog("We are on artist page: " + mainArtist.name);
+                getArtistGendra(mainArtist);
             }
+
+            artists.push(mainArtist);
         }
 
         for (; i < albumThumbnails.length; ++i)
         {
-            var thumbnail = albumThumbnails[i];
-            var thumbLink = thumbnail.getElementsByTagName("a")[0];
-            var album = {};
+            let thumbnail = albumThumbnails[i];
+            let thumbLink = thumbnail.getElementsByTagName("a")[0];
+            let album = {};
 
             album.name = formatText(thumbLink.getAttribute("title").replace(/\[.*\] /, ""));
             album.tag = thumbnail;
 
             if (isHomePage)
             {
-                var artistName = formatText(thumbnail.getElementsByClassName("caption2")[0].innerHTML);
-                var artist = getArtistFromCollection(artistName, artists);
+                let artistName = formatText(thumbnail.getElementsByClassName("caption2")[0].innerHTML);
+                let artist = getArtistFromCollection(artistName, artists);
 
                 if (artist.name === "")
                 {
@@ -368,23 +393,19 @@
             {
                 if (album.name !== "")
                 {
-                    debugLog("Adding album " + album.name + " to " + artist.name);
-                    artist.albums.push(album); // function scoped artist.
+                    debugLog("Adding album " + album.name + " to " + mainArtist.name);
+                    mainArtist.albums.push(album); // function scoped artist.
                 }
             }
         }
 
-        if (!isHomePage)
-        {
-            artists.push(artist);
-        }
-
-        for (var j = 0; j < artists.length; ++j)
+        for (let j = 0; j < artists.length; ++j)
         {
             getSputnikArtistRatings(artists[j]);
         }
     }
 
+//----------------------------------------------------------------------------
     getRatingsForArtists();
 
 })();
