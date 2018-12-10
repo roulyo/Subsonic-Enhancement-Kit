@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name        Subsonic makeover
 // @namespace   roulyo
-// @include		https://subsonic.mogmi.fr/*
-// @version     1
+// @include     https://subsonic.mogmi.fr/*
+// @version     0.2
 // @grant       none
 // ==/UserScript==
 
@@ -16,11 +16,11 @@
 
     function GridRescaling()
     {
-        var albumThumbnails = document.getElementsByClassName('albumThumb');
+        let albumThumbnails = document.getElementsByClassName('albumThumb');
 
-        for (var i = 0; i < albumThumbnails.length; ++i)
+        for (let i = 0; i < albumThumbnails.length; ++i)
         {
-            var thumbnail = albumThumbnails[i];
+            let thumbnail = albumThumbnails[i];
 
             thumbnail.style.paddingRight = '19px';
             thumbnail.style.paddingBottom = '19px';
@@ -29,20 +29,28 @@
 
     function RemoveWarnings()
     {
-        var warnings = document.getElementsByClassName('warning');
+        let warnings = document.getElementsByClassName('warning');
 
-        for (var i = 0; i < warnings.length; ++i)
+        for (let i = 0; i < warnings.length; ++i)
         {
-            var warning = warnings[i];
+            let warning = warnings[i];
 
             warning.parentElement.removeChild(warning);
         }
     }
 
+    function RemoveInfo()
+    {
+        let info = document.getElementsByClassName('minus')[0].parentElement;
+
+        info.parentElement.removeChild(info);
+    }
+
     function Facelift()
     {
-        GridRescaling();
+        //GridRescaling();
         RemoveWarnings();
+        RemoveInfo();
     }
 
 
