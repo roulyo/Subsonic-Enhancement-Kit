@@ -2,7 +2,7 @@
 // @name        Working lyrics
 // @namespace   roulyo
 // @include     https://subsonic.mogmi.fr/*
-// @version     1.1
+// @version     0.2
 // @grant       none
 // ==/UserScript==
 
@@ -14,22 +14,19 @@
         return;
     }
 
-    console.log("aunching lyrics");
-
     function swapLyricsLink()
     {
         document.removeEventListener("DOMSubtreeModified", swapLyricsLink, false);
 
-        var lyricsLinks = document.getElementsByClassName("now-playing-lyrics");
+        let lyricsLinks = document.getElementsByClassName("now-playing-lyrics");
 
-
-        for (var i = 0; i < lyricsLinks.length; ++i)
+        for (let i = 0; i < lyricsLinks.length; ++i)
         {
-            var lyricsLink = lyricsLinks[i];
-            var grandParent = lyricsLink.parentElement.parentElement;
-            var title = encodeURIComponent(grandParent.getElementsByClassName("now-playing-title")[0].innerHTML.replace(/\s+/g, "-"));
-            var artist = encodeURIComponent(grandParent.getElementsByClassName("now-playing-artist")[0].innerHTML.replace(/\s+/g, "-"));
-            var newLyricsLink = document.createElement("a");
+            let lyricsLink = lyricsLinks[i];
+            let grandParent = lyricsLink.parentElement.parentElement;
+            let title = encodeURIComponent(grandParent.getElementsByClassName("now-playing-title")[0].innerHTML.replace(/\s+/g, "-"));
+            let artist = encodeURIComponent(grandParent.getElementsByClassName("now-playing-artist")[0].innerHTML.replace(/\s+/g, "-"));
+            let newLyricsLink = document.createElement("a");
 
             newLyricsLink.href = "https://genius.com/" + artist + "-" + title + "-lyrics";
             newLyricsLink.innerText = "Lyrics";
