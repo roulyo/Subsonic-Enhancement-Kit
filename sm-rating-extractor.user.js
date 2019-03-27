@@ -2,7 +2,7 @@
 // @name		Sputnik Grade Extractor
 // @namespace	roulyo
 // @include		https://subsonic.mogmi.fr/*
-// @version		0.2
+// @version		0.3
 // @grant		GM_xmlhttpRequest
 // ==/UserScript==
 
@@ -14,6 +14,12 @@
     {
         return;
     }
+
+    const config = {
+        "lastfmUsername" : "",
+        "getGendras": true,
+        "getScrobbles": true,
+    };
 
     const STATE_COMPLETE = 4;
     const HTTP_OK = 200;
@@ -293,7 +299,7 @@
                 gendraNode.innerText += " • " + gendras[i].childNodes[0].innerText;
             }
 
-            artistName.parentElement.appendChild(gendraNode);
+            artistName.parentElement.insertBefore(gendraNode, artistName.parentElement.lastChild);
         }
     }
 
@@ -311,6 +317,44 @@
                 if (response.readyState === STATE_COMPLETE && response.status === HTTP_OK)
                 {
                     extractGendras(DomParser.parseFromString(response.responseText, "text/html"), artist);
+                }
+            }
+        });
+    }
+
+//----------------------------------------------------------------------------
+    function extractScrobbleCount(dom, artist)
+    {
+        let header = document.getElementsByClassName("artistimage")[0].parentElement.parentElement;
+        let artistName = header.getElementsByTagName("h1")[0];
+
+        debugLog("Been there");
+        if (formatText(artistName.innerText) === artist.name)
+        {
+            debugLog("Done that");
+            let scrobbleCount = dom.getElementsByClassName("metadata-display")[0].innerText;
+            let scrobbleNode = dom.createElement("div");
+
+            scrobbleNode.innerText = "• " + scrobbleCount + " scrobbles";
+            artistName.parentElement.appendChild(scrobbleNode);
+        }
+    }
+
+//----------------------------------------------------------------------------
+    function getArtistScrobbleCount(artist, user)
+    {
+        let artistURIed = encodeURIComponent(artist.name);
+        let userURIed = encodeURIComponent(user);
+
+        debugLog("GET http://www.last.fm/user/" + userURIed + "/library/music/" + artistURIed);
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: "http://www.last.fm/user/" + userURIed + "/library/music/" + artistURIed,
+            onreadystatechange: function (response)
+            {
+                if (response.readyState === STATE_COMPLETE && response.status === HTTP_OK)
+                {
+                    extractScrobbleCount(DomParser.parseFromString(response.responseText, "text/html"), artist);
                 }
             }
         });
@@ -360,7 +404,16 @@
             {
                 mainArtist.name = formatText(pageNameNode.innerHTML);
                 debugLog("We are on artist page: " + mainArtist.name);
-                getArtistGendra(mainArtist);
+
+                if (config.getGendras)
+                {
+                    getArtistGendra(mainArtist);
+                }
+
+                if (config.getScrobbles)
+                {
+                    getArtistScrobbleCount(mainArtist, config.lastfmUsername);
+                }
             }
 
             artists.push(mainArtist);
