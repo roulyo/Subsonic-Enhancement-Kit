@@ -2,7 +2,7 @@
 // @name		Sputnik Grade Extractor
 // @namespace	roulyo
 // @include		https://subsonic.mogmi.fr/*
-// @version		0.3
+// @version		0.4
 // @grant		GM_xmlhttpRequest
 // ==/UserScript==
 
@@ -17,7 +17,7 @@
 
     const config = {
         "lastfmUsername" : "",
-        "getGendras": true,
+        "getTags": true,
         "getScrobbles": true,
     };
 
@@ -284,28 +284,38 @@
     }
 
 //----------------------------------------------------------------------------
-    function extractGendras(dom, artist)
+    function extractTags(dom, artist)
     {
         let header = document.getElementsByClassName("artistimage")[0].parentElement.parentElement;
         let artistName = header.getElementsByTagName("h1")[0];
 
         if (formatText(artistName.innerText) === artist.name)
         {
-            let gendras = dom.getElementsByClassName("tags-list")[0].getElementsByClassName("tag");
-            let gendraNode = dom.createElement("div");
+            let tags = dom.getElementsByClassName("tags-list")[0].getElementsByClassName("tag");
+            let tagNode = document.getElementsByClassName("tags-list")[0];
 
-            for (let i = 0; i < 3 && i < gendras.length; ++i)
+            tagNode.innerText = "";
+            for (let i = 0; i < 3 && i < tags.length; ++i)
             {
-                gendraNode.innerText += " • " + gendras[i].childNodes[0].innerText;
+                tagNode.innerText += " • " + tags[i].childNodes[0].innerText;
             }
 
-            artistName.parentElement.insertBefore(gendraNode, artistName.parentElement.lastChild);
+            artistName.parentElement.insertBefore(tagNode, artistName.parentElement.lastChild);
         }
     }
 
 //----------------------------------------------------------------------------
-    function getArtistGendra(artist)
+    function getArtistTags(artist)
     {
+        let header = document.getElementsByClassName("artistimage")[0].parentElement.parentElement;
+        let artistName = header.getElementsByTagName("h1")[0];
+
+        let tagsNode = document.createElement("div");
+        tagsNode.classList.add("tags-list");
+        tagsNode.innerText = "getting them last.fm tags, so you can argue and break friendships over it";
+
+        artistName.parentElement.appendChild(tagsNode);
+
         let artistURIed = encodeURIComponent(artist.name);
 
         debugLog("GET http://www.last.fm/music/" + artistURIed);
@@ -316,7 +326,7 @@
             {
                 if (response.readyState === STATE_COMPLETE && response.status === HTTP_OK)
                 {
-                    extractGendras(DomParser.parseFromString(response.responseText, "text/html"), artist);
+                    extractTags(DomParser.parseFromString(response.responseText, "text/html"), artist);
                 }
             }
         });
@@ -328,21 +338,44 @@
         let header = document.getElementsByClassName("artistimage")[0].parentElement.parentElement;
         let artistName = header.getElementsByTagName("h1")[0];
 
-        debugLog("Been there");
         if (formatText(artistName.innerText) === artist.name)
         {
-            debugLog("Done that");
             let scrobbleCount = dom.getElementsByClassName("metadata-display")[0].innerText;
-            let scrobbleNode = dom.createElement("div");
+            let scrobbleNode = document.getElementsByClassName("scrobble-display")[0];
+            let fanboy = scrobbleCount < 100 ? "nop" :
+                         scrobbleCount < 500 ? "meh" :
+                         scrobbleCount < 1000 ? "kinda" : "true fanboy";
 
-            scrobbleNode.innerText = "• " + scrobbleCount + " scrobbles";
-            artistName.parentElement.appendChild(scrobbleNode);
+            scrobbleNode.innerText = "• ";
+
+            let scrobbleLink = document.createElement("a");
+            let artistURIed = encodeURIComponent(artist.name);
+            let userURIed = encodeURIComponent(config.lastfmUsername);
+            scrobbleLink.href = "http://www.last.fm/user/" + userURIed + "/library/music/" + artistURIed;
+            scrobbleLink.target = "_blank";
+
+            let scrobbleText = document.createTextNode(scrobbleCount + " scrobbles");
+
+            scrobbleLink.appendChild(scrobbleText);
+            scrobbleNode.appendChild(scrobbleLink);
+
+            let fanboyText = document.createTextNode(" ("+ fanboy + ")");
+            scrobbleNode.appendChild(fanboyText);
         }
     }
 
 //----------------------------------------------------------------------------
     function getArtistScrobbleCount(artist, user)
     {
+        let header = document.getElementsByClassName("artistimage")[0].parentElement.parentElement;
+        let artistName = header.getElementsByTagName("h1")[0];
+
+        let scrobbleNode = document.createElement("div");
+        scrobbleNode.classList.add("scrobble-display");
+        scrobbleNode.innerText = config.lastfmUsername + ", r u fanboy?";
+
+        artistName.parentElement.appendChild(scrobbleNode);
+
         let artistURIed = encodeURIComponent(artist.name);
         let userURIed = encodeURIComponent(user);
 
@@ -405,9 +438,9 @@
                 mainArtist.name = formatText(pageNameNode.innerHTML);
                 debugLog("We are on artist page: " + mainArtist.name);
 
-                if (config.getGendras)
+                if (config.getTags)
                 {
-                    getArtistGendra(mainArtist);
+                    getArtistTags(mainArtist);
                 }
 
                 if (config.getScrobbles)
