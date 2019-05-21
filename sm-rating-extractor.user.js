@@ -188,6 +188,16 @@
     }
 
 //----------------------------------------------------------------------------
+    function getLoadingSpinner()
+    {
+        let loadingImg = document.createElement("img");
+        loadingImg.src = "https://loading.io/spinners/dual-ring/lg.dual-ring-loader.gif";
+        loadingImg.height = 21;
+
+        return loadingImg;
+    }
+
+//----------------------------------------------------------------------------
     function applyRatingOnThumbnail(artist, album)
     {
         let thumbnail = album.tag.getElementsByTagName("a")[0];
@@ -312,7 +322,7 @@
 
         let tagsNode = document.createElement("div");
         tagsNode.classList.add("tags-list");
-        tagsNode.innerText = "getting them last.fm tags, so you can argue and break friendships over it";
+        tagsNode.appendChild(getLoadingSpinner());
 
         artistName.parentElement.appendChild(tagsNode);
 
@@ -342,9 +352,6 @@
         {
             let scrobbleCount = dom.getElementsByClassName("metadata-display")[0].innerText;
             let scrobbleNode = document.getElementsByClassName("scrobble-display")[0];
-            let fanboy = scrobbleCount < 100 ? "nop" :
-                         scrobbleCount < 500 ? "meh" :
-                         scrobbleCount < 1000 ? "kinda" : "true fanboy";
 
             scrobbleNode.innerText = "• ";
 
@@ -358,9 +365,6 @@
 
             scrobbleLink.appendChild(scrobbleText);
             scrobbleNode.appendChild(scrobbleLink);
-
-            let fanboyText = document.createTextNode(" ("+ fanboy + ")");
-            scrobbleNode.appendChild(fanboyText);
         }
     }
 
@@ -372,7 +376,7 @@
 
         let scrobbleNode = document.createElement("div");
         scrobbleNode.classList.add("scrobble-display");
-        scrobbleNode.innerText = config.lastfmUsername + ", r u fanboy?";
+        scrobbleNode.appendChild(getLoadingSpinner());
 
         artistName.parentElement.appendChild(scrobbleNode);
 
