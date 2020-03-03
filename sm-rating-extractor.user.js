@@ -2,7 +2,7 @@
 // @name		Sputnik Grade Extractor
 // @namespace	roulyo
 // @include		https://subsonic.mogmi.fr/*
-// @version		0.5
+// @version		0.6
 // @grant		GM_xmlhttpRequest
 // ==/UserScript==
 
@@ -27,7 +27,7 @@
     const _DEBUG = false;
     const VOTE_THRESHOLD = 100;
 
-    const thumbnailTemplate = "<div class=\"albumThumb\" style=\"display: inline-block; padding-right: 19px; padding-bottom: 19px;\"><div class=\"coverart dropshadow hoverable\" onmouseover=\"$(this).find('.coverart-play').show()\" onmouseout=\"$(this).find('.coverart-play').hide()\"><div style=\"width: 160px; max-width: 160px; height: 160px; max-height: 160px; cursor: pointer; position: relative;\" title=\"@name\"><div class=\"coverart-play\" style=\"position: relative; width: 0px; height: 0px; display: none;\"><div id=\"dl_button\"><i class=\"material-icons\" style=\"position:absolute; top: 2px; left: 2px; z-index: 2; font-size:48px; opacity:0.8\">fiber_manual_record</i><i class=\"material-icons\" style=\"position:absolute; top: 14px; left: 14px; z-index: 3; font-size:24px; color:white\">archive</i></div></div><img src=\"@cover\" alt=\"@name\" style=\"@style\" onload=\"$(this).delay(30).fadeIn(500);\"></div><div class=\"caption1\" style=\"width:144px\"><span>@name</span></div><div class=\"caption2\" style=\"width:144px\">@year&nbsp;</div></div></div>";
+    const thumbnailTemplate = "<div class=\"albumThumb\" style=\"display: inline-block; padding-right: 19px; padding-bottom: 19px;\"><div class=\"coverart dropshadow hoverable\" onmouseover=\"$(this).find('.coverart-play').show()\" onmouseout=\"$(this).find('.coverart-play').hide()\"><div style=\"width: 160px; max-width: 160px; height: 160px; max-height: 160px; cursor: pointer; position: relative;\" title=\"@name\"><div class=\"coverart-play\" style=\"position: relative; width: 0px; height: 0px; display: none;\"><div id=\"dl_button\"><i class=\"material-icons\" style=\"position:absolute; top: 2px; left: 2px; z-index: 2; font-size:48px; opacity:0.8\">fiber_manual_record</i><i class=\"material-icons\" style=\"position:absolute; top: 14px; left: 14px; z-index: 3; font-size:24px; color:white\">archive</i></div></div><a><img src=\"@cover\" alt=\"@name\" style=\"@style\" onload=\"$(this).delay(30).fadeIn(500);\"></a></div><div class=\"caption1\" style=\"width:144px\"><span>@name</span></div><div class=\"caption2\" style=\"width:144px\">@year&nbsp;</div></div></div>";
     const defaultDiacriticsRemovalMap = [
         {'base':'A', 'letters':'\u0041\u24B6\uFF21\u00C0\u00C1\u00C2\u1EA6\u1EA4\u1EAA\u1EA8\u00C3\u0100\u0102\u1EB0\u1EAE\u1EB4\u1EB2\u0226\u01E0\u00C4\u01DE\u1EA2\u00C5\u01FA\u01CD\u0200\u0202\u1EA0\u1EAC\u1EB6\u1E00\u0104\u023A\u2C6F'},
         {'base':'AA','letters':'\uA732'},
@@ -224,7 +224,11 @@
 
         ratingLink.appendChild(ratingText);
         ratingLink.title = album.voteQty + " votes on suptnikmusic.com";
-        ratingLink.href = album.link.replace(/.*\.mogmi\.fr/, "https://www.sputnikmusic.com");
+
+        if (album.link !== undefined)
+        {
+            ratingLink.href = album.link.replace(/.*\.mogmi\.fr/, "https://www.sputnikmusic.com");
+        }
 
         //let voteQtyNode = document.createElement("span");
         //voteQtyNode.innerHTML = " °";
@@ -289,7 +293,7 @@
         let thumbnail = {};
         thumbnail.name = albumPair.children[n+1].children[0].innerText;
         thumbnail.year = albumPair.children[n+1].children[2].innerText;
-        thumbnail.art = albumPair.children[n].children[0].children[0].src.replace("https://subsonic.mogmi.fr/", "https://www.sputnikmusic.com/");
+        thumbnail.art = albumPair.children[n].children[0].children[0].src.replace(/.*\.mogmi\.fr/, "https://www.sputnikmusic.com/");
 
         let newThumbnailDOM = thumbnailTemplate.replace(/@name/g, thumbnail.name)
                                                .replace(/@year/g, thumbnail.year)
@@ -303,6 +307,21 @@
         }, false);
 
         thumbnail.dom = div.firstChild;
+
+        let albumRatingNode = albumPair.children[n+1].children[5].getElementsByTagName("td")[0].getElementsByTagName("center");
+
+        if (albumRatingNode.length !== 0)
+        {
+            let albumRating = albumRatingNode[0].getElementsByTagName("font")[0].getElementsByTagName("b")[0].innerHTML;
+            let voteQty = albumRatingNode[0].getElementsByTagName("font")[1].innerHTML.replace(/\D+/g, '');
+
+            let album = {};
+            album.tag = thumbnail.dom;
+            album.rating = albumRating;
+            album.voteQty = voteQty;
+
+            applyRatingOnThumbnail("", album);
+        }
 
         return thumbnail;
     }
