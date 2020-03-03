@@ -2,7 +2,7 @@
 // @name		Sputnik Grade Extractor
 // @namespace	roulyo
 // @include		https://subsonic.mogmi.fr/*
-// @version		0.4
+// @version		0.5
 // @grant		GM_xmlhttpRequest
 // ==/UserScript==
 
@@ -23,9 +23,11 @@
 
     const STATE_COMPLETE = 4;
     const HTTP_OK = 200;
+
     const _DEBUG = false;
     const VOTE_THRESHOLD = 100;
 
+    const thumbnailTemplate = "<div class=\"albumThumb\" style=\"display: inline-block; padding-right: 19px; padding-bottom: 19px;\"><div class=\"coverart dropshadow hoverable\" onmouseover=\"$(this).find('.coverart-play').show()\" onmouseout=\"$(this).find('.coverart-play').hide()\"><div style=\"width: 160px; max-width: 160px; height: 160px; max-height: 160px; cursor: pointer; position: relative;\" title=\"@name\"><div class=\"coverart-play\" style=\"position: relative; width: 0px; height: 0px; display: none;\"><div id=\"dl_button\"><i class=\"material-icons\" style=\"position:absolute; top: 2px; left: 2px; z-index: 2; font-size:48px; opacity:0.8\">fiber_manual_record</i><i class=\"material-icons\" style=\"position:absolute; top: 14px; left: 14px; z-index: 3; font-size:24px; color:white\">archive</i></div></div><img src=\"@cover\" alt=\"@name\" style=\"@style\" onload=\"$(this).delay(30).fadeIn(500);\"></div><div class=\"caption1\" style=\"width:144px\"><span>@name</span></div><div class=\"caption2\" style=\"width:144px\">@year&nbsp;</div></div></div>";
     const defaultDiacriticsRemovalMap = [
         {'base':'A', 'letters':'\u0041\u24B6\uFF21\u00C0\u00C1\u00C2\u1EA6\u1EA4\u1EAA\u1EA8\u00C3\u0100\u0102\u1EB0\u1EAE\u1EB4\u1EB2\u0226\u01E0\u00C4\u01DE\u1EA2\u00C5\u01FA\u01CD\u0200\u0202\u1EA0\u1EAC\u1EB6\u1E00\u0104\u023A\u2C6F'},
         {'base':'AA','letters':'\uA732'},
@@ -191,7 +193,7 @@
     function getLoadingSpinner()
     {
         let loadingImg = document.createElement("img");
-        loadingImg.src = "https://loading.io/spinners/dual-ring/lg.dual-ring-loader.gif";
+        loadingImg.src = "https://icon-library.net/images/spinner-icon-gif/spinner-icon-gif-26.jpg";
         loadingImg.height = 21;
 
         return loadingImg;
@@ -275,7 +277,105 @@
     }
 
 //----------------------------------------------------------------------------
-    function getSputnikArtistRatings(artist)
+    function OnDLRequest(artist, album)
+    {
+        console.log(album + " by " + artist);
+    }
+
+
+//----------------------------------------------------------------------------
+    function createThumbnail(artistName, albumPair, n)
+    {
+        let thumbnail = {};
+        thumbnail.name = albumPair.children[n+1].children[0].innerText;
+        thumbnail.year = albumPair.children[n+1].children[2].innerText;
+        thumbnail.art = albumPair.children[n].children[0].children[0].src.replace("https://subsonic.mogmi.fr/", "https://www.sputnikmusic.com/");
+
+        let newThumbnailDOM = thumbnailTemplate.replace(/@name/g, thumbnail.name)
+                                               .replace(/@year/g, thumbnail.year)
+                                               .replace(/@cover/g, thumbnail.art)
+                                               .replace(/@style/g, "width: 160px; max-width: 160px; height: 160px; max-height: 160px; filter: grayscale(100%);");
+
+        let div = document.createElement("div");
+        div.innerHTML = newThumbnailDOM;
+        div.querySelector("#dl_button").addEventListener("click", function(){
+            OnDLRequest(artistName, thumbnail.name);
+        }, false);
+
+        thumbnail.dom = div.firstChild;
+
+        return thumbnail;
+    }
+
+
+//----------------------------------------------------------------------------
+    function getMissingAlbumsDiv()
+    {
+        let missingAlbumsDiv = document.getElementById("missingAlbumsDiv");
+
+        if (missingAlbumsDiv === null)
+        {
+            let anchor = document.getElementsByClassName("music indent")[0];
+            debugLog(anchor);
+            debugLog(anchor.nextSibling);
+            missingAlbumsDiv = document.createElement("div");
+            missingAlbumsDiv.id = "missingAlbumsDiv";
+
+            let title = document.createElement("h4");
+            title.innerText = "Missing albums:";
+            missingAlbumsDiv.appendChild(title);
+
+            let metaDiv = document.createElement("div");
+            metaDiv.style = "float: left;padding-top: 0.5em;";
+
+            let albumsDiv = anchor.nextSibling.nextSibling;
+            albumsDiv.style = "";
+
+            anchor.parentNode.insertBefore(metaDiv, albumsDiv);
+            metaDiv.appendChild(albumsDiv);
+            metaDiv.appendChild(missingAlbumsDiv);
+        }
+
+        return missingAlbumsDiv;
+    }
+
+
+//----------------------------------------------------------------------------
+    function extractMissingAlbums(dom, artist)
+    {
+        let albums = dom.getElementsByClassName("plaincontentbox")[0].children[0].children;
+        let i = 3; // previous nodes are garbage
+
+        while (albums[i].childElementCount > 1)
+        {
+            let albumPair = albums[i];
+
+            debugLog(albumPair);
+
+            for (let j = 0; j < albumPair.childElementCount; j += 2)
+            {
+                let name = albumPair.children[j+1].firstChild.innerText.toLowerCase();
+                let found = artist.albums.find(element => element.name === name);
+
+                if (found === undefined)
+                {
+                    let missingAlbumsDiv = getMissingAlbumsDiv();
+                    let newNode = createThumbnail(artist.name, albumPair, j);
+                    let descNode = document.getElementById("artistInfoTable");
+                    let parentDiv = descNode.parentNode;
+
+                    newNode.innerText = name;
+                    missingAlbumsDiv.appendChild(newNode.dom);
+                }
+            }
+
+            ++i;
+        }
+    }
+
+
+//----------------------------------------------------------------------------
+    function getSputnikArtistRatings(artist, shouldExtractMissingAlbums)
     {
         let artistURIed = encodeURIComponent(artist.name);
 
@@ -287,7 +387,14 @@
             {
                 if (response.readyState === STATE_COMPLETE && response.status === HTTP_OK)
                 {
-                    extractRatings(DomParser.parseFromString(response.responseText, "text/html"), artist);
+                    let dom = DomParser.parseFromString(response.responseText, "text/html");
+
+                    extractRatings(dom, artist);
+
+                    if (shouldExtractMissingAlbums)
+                    {
+                        extractMissingAlbums(dom, artist);
+                    }
                 }
             }
         });
@@ -407,6 +514,7 @@
         let artists = [];
         let mainArtist = {};
         let i = 0;
+        let shouldExtractMissingAlbums = false;
 
         if (!isHomePage) // Album or artist page
         {
@@ -441,6 +549,8 @@
             {
                 mainArtist.name = formatText(pageNameNode.innerHTML);
                 debugLog("We are on artist page: " + mainArtist.name);
+
+                shouldExtractMissingAlbums = true;
 
                 if (config.getTags)
                 {
@@ -491,7 +601,7 @@
 
         for (let j = 0; j < artists.length; ++j)
         {
-            getSputnikArtistRatings(artists[j]);
+            getSputnikArtistRatings(artists[j], shouldExtractMissingAlbums);
         }
     }
 
