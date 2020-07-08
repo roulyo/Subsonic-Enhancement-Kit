@@ -2,7 +2,7 @@
 // @name        Double album thumbnail
 // @namespace   roulyo
 // @include     https://subsonic.mogmi.fr/*
-// @version     0.2
+// @version     1
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
 
@@ -116,7 +116,7 @@
 
     function extractCoverArt(document, thumbnail)
     {
-        thumbnail.dom.innerHTML = thumbnail.dom.innerHTML.replace(/@cover/g, document.getElementsByClassName("cover-art")[1].src)
+        thumbnail.dom.innerHTML = thumbnail.dom.innerHTML.replace(/@cover/g, document.getElementsByClassName("cover-art")[0].firstElementChild.src)
             .replace(/@style/g, "width: 160px; max-width: 160px; height: 160px; max-height: 160px;");
     }
 
