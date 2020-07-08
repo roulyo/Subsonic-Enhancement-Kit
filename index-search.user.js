@@ -2,7 +2,7 @@
 // @name        Working index search
 // @namespace   roulyo
 // @include     https://subsonic.mogmi.fr/*
-// @version     0.2
+// @version     1.0
 // @grant       none
 // ==/UserScript==
 
@@ -36,3 +36,4 @@
     addLinkToDiv();
 
 })();
+
