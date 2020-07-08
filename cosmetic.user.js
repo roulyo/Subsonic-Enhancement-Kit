@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name        Subsonic makeover
 // @namespace   roulyo
-// @include     https://subsonic.mogmi.fr/*
-// @version     0.2
+// @include		https://subsonic.mogmi.fr/*
+// @version     1
 // @grant       none
 // ==/UserScript==
 
@@ -41,9 +41,13 @@
 
     function RemoveInfo()
     {
-        let info = document.getElementsByClassName('minus')[0].parentElement;
+        let info = document.getElementsByClassName('mainframe')[0].children[4];
 
-        info.parentElement.removeChild(info);
+        console.log(info.style.borderLeft);
+        if (info.style.borderLeft === "1px solid rgb(51, 51, 51)")
+        {
+            info.parentElement.removeChild(info);
+        }
     }
 
     function Facelift()
