@@ -2,7 +2,7 @@
 // @name		Sputnik Grade Extractor
 // @namespace	roulyo
 // @include		https://subsonic.mogmi.fr/*
-// @version		0.6
+// @version		0.7
 // @grant		GM_xmlhttpRequest
 // ==/UserScript==
 
@@ -252,7 +252,7 @@
 
             for (let j = 0; j < fonts.length; ++j)
             {
-                if (fonts[j].innerHTML.toLowerCase() === album.name)
+                if (formatText(fonts[j].innerHTML.toLowerCase()) === album.name)
                 {
                     debugLog("Album found: " + fonts[j].innerHTML);
                     albumNode = fonts[j].parentElement.parentElement.parentElement.parentElement;
@@ -284,6 +284,7 @@
     function OnDLRequest(artist, album)
     {
         console.log(album + " by " + artist);
+        window.open(`https://open.spotify.com/search/${encodeURIComponent(`${artist} ${album}`)}`, '_blank');
     }
 
 
@@ -373,15 +374,13 @@
 
             for (let j = 0; j < albumPair.childElementCount; j += 2)
             {
-                let name = albumPair.children[j+1].firstChild.innerText.toLowerCase();
+                let name = formatText(albumPair.children[j+1].firstChild.innerText.toLowerCase());
                 let found = artist.albums.find(element => element.name === name);
 
                 if (found === undefined)
                 {
                     let missingAlbumsDiv = getMissingAlbumsDiv();
                     let newNode = createThumbnail(artist.name, albumPair, j);
-                    let descNode = document.getElementById("artistInfoTable");
-                    let parentDiv = descNode.parentNode;
 
                     newNode.innerText = name;
                     missingAlbumsDiv.appendChild(newNode.dom);
