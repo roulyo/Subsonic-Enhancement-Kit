@@ -2,7 +2,7 @@
 // @name        Working lyrics
 // @namespace   roulyo
 // @include     https://subsonic.mogmi.fr/*
-// @version     0.2
+// @version     1.1
 // @grant       none
 // ==/UserScript==
 
